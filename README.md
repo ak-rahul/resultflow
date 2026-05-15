@@ -245,25 +245,6 @@ Target coverage: **>80% on service and util layers.**
 
 ---
 
-## Interview Talking Points
-
-### "Why both JPA and JDBC?"
-> For standard CRUD operations, JPA repositories eliminate boilerplate. For CGPA — a 4-table JOIN with weighted average aggregation — raw `JdbcTemplate` gives full SQL control and is more efficient for this read-heavy analytic query.
-
-### "Explain your CGPA calculation."
-> CGPA = `SUM(grade_point × credits) / SUM(credits)` across all courses. Computed via a `JdbcTemplate.queryForObject()` call with a 4-table JOIN SQL query. Unit-tested with mocked `JdbcTemplate` for: all-outstanding (CGPA=10), mixed grades ((4×10 + 3×7)/7 = 8.71), and zero grades.
-
-### "How did you handle errors?"
-> `@ControllerAdvice` on `GlobalExceptionHandler` catches custom exceptions (`ResourceNotFoundException` → 404, `DuplicateEnrollmentException` → 409) and the catch-all (`Exception` → 500). For `/api/*` paths it returns a structured `ErrorResponse` JSON; for MVC paths it renders `error.html`. All unhandled exceptions are logged with full stack trace at `ERROR` level.
-
-### "What tests did you write?"
-> 47 unit tests across 5 classes — JUnit 5 + Mockito, no database required. Most important: `GradeCalculatorTest` tests every boundary (89 vs 90, 39 vs 40). Service tests mock repositories via `@InjectMocks`/`@Mock`. `ResultServiceTest` mocks `JdbcTemplate` to verify the CGPA formula arithmetic. JaCoCo reports >80% line coverage on service/util layers.
-
-### "What is your soft-delete pattern?"
-> Students are never hard-deleted. `StudentService.deactivate()` sets `isActive = false`. This preserves the entire enrollment and grade history — crucial for academic records. The `deactivate` endpoint is a `POST` (not `DELETE`) from the MVC layer to avoid CSRF complexity.
-
----
-
 *Total files: ~55 Java + HTML + SQL + CSS + JS*
 *Test count: 47 unit tests*
 *JD requirements covered: 10/10*
