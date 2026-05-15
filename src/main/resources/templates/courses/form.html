@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${isEdit} ? 'Edit Course | SRMS' : 'Add Course | SRMS'">Course Form | SRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/srms.css}"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg srms-navbar sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand srms-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div><span>SRMS</span>
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/}"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/students}"><i class="bi bi-people-fill me-1"></i>Students</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link active" th:href="@{/courses}"><i class="bi bi-book-fill me-1"></i>Courses</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/enrollments/new}"><i class="bi bi-journal-plus me-1"></i>Enroll</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/grades/entry}"><i class="bi bi-pencil-square me-1"></i>Grades</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="srms-main">
+    <div class="container-fluid px-4">
+        <div class="srms-page-header">
+            <div>
+                <h1 class="srms-page-title">
+                    <i class="bi bi-book me-2 text-primary"></i>
+                    <span th:text="${isEdit} ? 'Edit Course' : 'Add New Course'">Course Form</span>
+                </h1>
+                <p class="srms-page-subtitle" th:text="${isEdit} ? 'Update course details' : 'Register a new course in the system'"></p>
+            </div>
+            <a th:href="@{/courses}" class="btn srms-btn-outline"><i class="bi bi-arrow-left me-1"></i>Back to Courses</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="srms-card">
+                    <div class="alert alert-danger" th:if="${errorMessage}">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
+                    </div>
+
+                    <form th:action="${isEdit} ? @{/courses/{id}/edit(id=${courseId})} : @{/courses/new}"
+                          th:object="${courseDTO}" method="post" id="courseForm">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="courseCode" class="form-label srms-label">Course Code <span class="text-danger">*</span></label>
+                                <input type="text" id="courseCode" th:field="*{courseCode}"
+                                       class="form-control srms-input" th:classappend="${#fields.hasErrors('courseCode')} ? ' is-invalid' : ''"
+                                       placeholder="e.g. CS301" th:readonly="${isEdit}"/>
+                                <div class="invalid-feedback" th:errors="*{courseCode}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="credits" class="form-label srms-label">Credits <span class="text-danger">*</span></label>
+                                <input type="number" id="credits" th:field="*{credits}"
+                                       class="form-control srms-input" th:classappend="${#fields.hasErrors('credits')} ? ' is-invalid' : ''"
+                                       min="1" max="6"/>
+                                <div class="invalid-feedback" th:errors="*{credits}"></div>
+                            </div>
+                            <div class="col-12">
+                                <label for="courseName" class="form-label srms-label">Course Name <span class="text-danger">*</span></label>
+                                <input type="text" id="courseName" th:field="*{courseName}"
+                                       class="form-control srms-input" th:classappend="${#fields.hasErrors('courseName')} ? ' is-invalid' : ''"
+                                       placeholder="e.g. Data Structures and Algorithms"/>
+                                <div class="invalid-feedback" th:errors="*{courseName}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="dept" class="form-label srms-label">Department <span class="text-danger">*</span></label>
+                                <select id="dept" th:field="*{department}" class="form-select srms-input">
+                                    <option value="">-- Select Department --</option>
+                                    <option value="CSE">CSE</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="EEE">EEE</option>
+                                    <option value="MECH">MECH</option>
+                                    <option value="CIVIL">CIVIL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label srms-label">Course Type</label>
+                                <div class="d-flex gap-3 mt-1">
+                                    <div class="form-check" th:each="type : ${courseTypes}">
+                                        <input class="form-check-input" type="radio"
+                                               th:id="${'type_' + type.name()}" th:field="*{courseType}" th:value="${type}"/>
+                                        <label class="form-check-label" th:for="${'type_' + type.name()}" th:text="${type}">THEORY</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn srms-btn-primary" id="submitCourseBtn">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <span th:text="${isEdit} ? 'Update Course' : 'Save Course'">Save</span>
+                            </button>
+                            <a th:href="@{/courses}" class="btn srms-btn-outline"><i class="bi bi-x-circle me-1"></i>Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="srms-footer mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-mortarboard-fill me-2 text-primary"></i>SRMS &copy; 2025</span>
+            <span class="text-muted small">Student Result Management System</span>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/srms.js}"></script>
+</body>
+</html>

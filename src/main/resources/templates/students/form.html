@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${isEdit} ? 'Edit Student | SRMS' : 'Add Student | SRMS'">Student Form | SRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/srms.css}"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg srms-navbar sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand srms-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div><span>SRMS</span>
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/}"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link active" th:href="@{/students}"><i class="bi bi-people-fill me-1"></i>Students</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/courses}"><i class="bi bi-book-fill me-1"></i>Courses</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/enrollments/new}"><i class="bi bi-journal-plus me-1"></i>Enroll</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/grades/entry}"><i class="bi bi-pencil-square me-1"></i>Grades</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="srms-main">
+    <div class="container-fluid px-4">
+        <div class="srms-page-header">
+            <div>
+                <h1 class="srms-page-title">
+                    <i class="bi bi-person-plus-fill me-2 text-primary" th:unless="${isEdit}"></i>
+                    <i class="bi bi-pencil-square me-2 text-primary" th:if="${isEdit}"></i>
+                    <span th:text="${isEdit} ? 'Edit Student' : 'Add New Student'">Student Form</span>
+                </h1>
+                <p class="srms-page-subtitle" th:text="${isEdit} ? 'Update student information' : 'Register a new student in the system'"></p>
+            </div>
+            <a th:href="@{/students}" class="btn srms-btn-outline"><i class="bi bi-arrow-left me-1"></i>Back to Students</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="srms-card">
+                    <!-- Error message -->
+                    <div class="alert alert-danger" th:if="${errorMessage}">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
+                    </div>
+
+                    <form th:action="${isEdit} ? @{/students/{id}/edit(id=${studentId})} : @{/students/new}"
+                          th:object="${studentDTO}" method="post" id="studentForm" novalidate>
+
+                        <div class="row g-4">
+                            <!-- Roll Number -->
+                            <div class="col-md-6">
+                                <label for="rollNumber" class="form-label srms-label">Roll Number <span class="text-danger">*</span></label>
+                                <input type="text" id="rollNumber" th:field="*{rollNumber}"
+                                       class="form-control srms-input" th:classappend="${#fields.hasErrors('rollNumber')} ? ' is-invalid' : ''"
+                                       placeholder="e.g. 23CS001" th:readonly="${isEdit}"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('rollNumber')}" th:errors="*{rollNumber}"></div>
+                            </div>
+
+                            <!-- Name -->
+                            <div class="col-md-6">
+                                <label for="name" class="form-label srms-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" id="name" th:field="*{name}"
+                                       class="form-control srms-input" th:classappend="${#fields.hasErrors('name')} ? ' is-invalid' : ''"
+                                       placeholder="e.g. Rahul AK"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label for="email" class="form-label srms-label">Email</label>
+                                <input type="email" id="email" th:field="*{email}"
+                                       class="form-control srms-input" th:classappend="${#fields.hasErrors('email')} ? ' is-invalid' : ''"
+                                       placeholder="student@university.ac.in"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label srms-label">Phone</label>
+                                <input type="text" id="phone" th:field="*{phone}"
+                                       class="form-control srms-input" placeholder="e.g. 9876543210"/>
+                            </div>
+
+                            <!-- Department -->
+                            <div class="col-md-6">
+                                <label for="department" class="form-label srms-label">Department <span class="text-danger">*</span></label>
+                                <select id="department" th:field="*{department}"
+                                        class="form-select srms-input" th:classappend="${#fields.hasErrors('department')} ? ' is-invalid' : ''">
+                                    <option value="">-- Select Department --</option>
+                                    <option value="CSE">CSE — Computer Science &amp; Engineering</option>
+                                    <option value="ECE">ECE — Electronics &amp; Communication</option>
+                                    <option value="EEE">EEE — Electrical &amp; Electronics</option>
+                                    <option value="MECH">MECH — Mechanical Engineering</option>
+                                    <option value="CIVIL">CIVIL — Civil Engineering</option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('department')}" th:errors="*{department}"></div>
+                            </div>
+
+                            <!-- Current Semester -->
+                            <div class="col-md-3">
+                                <label for="currentSem" class="form-label srms-label">Current Semester <span class="text-danger">*</span></label>
+                                <select id="currentSem" th:field="*{currentSem}" class="form-select srms-input">
+                                    <option th:each="s : ${#numbers.sequence(1, 10)}" th:value="${s}" th:text="'Semester ' + ${s}">1</option>
+                                </select>
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="col-md-3">
+                                <label for="dateOfBirth" class="form-label srms-label">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" th:field="*{dateOfBirth}" class="form-control srms-input"/>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-3 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn srms-btn-primary" id="submitStudentBtn">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <span th:text="${isEdit} ? 'Update Student' : 'Save Student'">Save</span>
+                            </button>
+                            <a th:href="@{/students}" class="btn srms-btn-outline">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="srms-footer mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-mortarboard-fill me-2 text-primary"></i>SRMS &copy; 2025</span>
+            <span class="text-muted small">Student Result Management System</span>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/srms.js}"></script>
+</body>
+</html>

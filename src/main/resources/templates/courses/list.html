@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Courses | SRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/srms.css}"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg srms-navbar sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand srms-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div><span>SRMS</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav3"><i class="bi bi-list text-white fs-4"></i></button>
+        <div class="collapse navbar-collapse" id="nav3">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/}"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/students}"><i class="bi bi-people-fill me-1"></i>Students</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link active" th:href="@{/courses}"><i class="bi bi-book-fill me-1"></i>Courses</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/enrollments/new}"><i class="bi bi-journal-plus me-1"></i>Enroll</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/grades/entry}"><i class="bi bi-pencil-square me-1"></i>Grades</a></li>
+            </ul>
+            <a class="btn btn-outline-light btn-sm" th:href="@{/courses/new}"><i class="bi bi-plus-circle me-1"></i>Add Course</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 pt-3" th:if="${successMessage != null}">
+    <div class="alert alert-success alert-dismissible fade show srms-alert-success">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<main class="srms-main">
+    <div class="container-fluid px-4">
+        <div class="srms-page-header">
+            <div>
+                <h1 class="srms-page-title"><i class="bi bi-book-fill me-2 text-primary"></i>Courses</h1>
+                <p class="srms-page-subtitle" th:text="${courses.size() + ' course(s) found'}">0 courses</p>
+            </div>
+            <a th:href="@{/courses/new}" class="btn srms-btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Course</a>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="srms-card mb-4">
+            <form method="get" th:action="@{/courses}" class="d-flex gap-3 align-items-center" id="deptFilterForm">
+                <label class="form-label mb-0 fw-medium">Filter by department:</label>
+                <select name="department" id="deptFilter" class="form-select srms-input" style="max-width:250px"
+                        onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedDepartment == null or #strings.isEmpty(selectedDepartment)}">All Departments</option>
+                    <option th:each="dept : ${ {'CSE','ECE','EEE','MECH','CIVIL'} }"
+                            th:value="${dept}" th:text="${dept}"
+                            th:selected="${dept == selectedDepartment}">Dept</option>
+                </select>
+                <a th:if="${selectedDepartment != null and !#strings.isEmpty(selectedDepartment)}"
+                   th:href="@{/courses}" class="btn srms-btn-outline btn-sm"><i class="bi bi-x-circle me-1"></i>Clear</a>
+            </form>
+        </div>
+
+        <div class="srms-card">
+            <div class="table-responsive">
+                <table class="table srms-table mb-0" id="coursesTable">
+                    <thead>
+                        <tr><th>Code</th><th>Course Name</th><th>Credits</th><th>Department</th><th>Type</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="course : ${courses}">
+                            <td><code th:text="${course.courseCode}">CS301</code></td>
+                            <td th:text="${course.courseName}">Data Structures</td>
+                            <td><span class="badge bg-secondary" th:text="${course.credits} + ' cr'">4 cr</span></td>
+                            <td><span class="badge srms-badge-dept" th:text="${course.department}">CSE</span></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${course.courseType?.name() == 'THEORY'} ? ' bg-primary bg-opacity-10 text-primary' : (${course.courseType?.name() == 'LAB'} ? ' bg-success bg-opacity-10 text-success' : ' bg-warning bg-opacity-10 text-warning')"
+                                      th:text="${course.courseType}">THEORY</span>
+                            </td>
+                            <td>
+                                <span th:if="${course.isActive}" class="badge srms-badge-active">Active</span>
+                                <span th:unless="${course.isActive}" class="badge srms-badge-inactive">Inactive</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a th:href="@{/courses/{id}/edit(id=${course.id})}" class="btn btn-sm srms-btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <form th:if="${course.isActive}" th:action="@{/courses/{id}/deactivate(id=${course.id})}" method="post"
+                                          onsubmit="return confirm('Deactivate this course?')">
+                                        <button type="submit" class="btn btn-sm srms-btn-danger-icon" title="Deactivate"><i class="bi bi-archive"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(courses)}">
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-book fs-1 d-block mb-3 opacity-25"></i>
+                                No courses found. <a th:href="@{/courses/new}">Add one now</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="srms-footer mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-mortarboard-fill me-2 text-primary"></i>SRMS &copy; 2025</span>
+            <span class="text-muted small">Student Result Management System</span>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/srms.js}"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${student.name + ' | SRMS'}">Student Detail | SRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/srms.css}"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg srms-navbar sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand srms-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div><span>SRMS</span>
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/}"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link active" th:href="@{/students}"><i class="bi bi-people-fill me-1"></i>Students</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/courses}"><i class="bi bi-book-fill me-1"></i>Courses</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/enrollments/new}"><i class="bi bi-journal-plus me-1"></i>Enroll</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/grades/entry}"><i class="bi bi-pencil-square me-1"></i>Grades</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 pt-3" th:if="${successMessage != null}">
+    <div class="alert alert-success alert-dismissible fade show srms-alert-success">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<main class="srms-main">
+    <div class="container-fluid px-4">
+
+        <!-- Back + Actions Header -->
+        <div class="srms-page-header mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a th:href="@{/students}" class="btn srms-btn-outline btn-sm"><i class="bi bi-arrow-left"></i></a>
+                <div>
+                    <h1 class="srms-page-title mb-0" th:text="${student.name}">Student Name</h1>
+                    <p class="srms-page-subtitle mb-0"><code th:text="${student.rollNumber}">23CS001</code> &bull; <span th:text="${student.department}">CSE</span></p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/enrollments/new(studentId=${student.id})}" class="btn srms-btn-outline btn-sm">
+                    <i class="bi bi-journal-plus me-1"></i>Enroll in Course
+                </a>
+                <a th:href="@{/grades/entry(studentId=${student.id})}" class="btn srms-btn-primary btn-sm">
+                    <i class="bi bi-pencil-square me-1"></i>Enter Grades
+                </a>
+                <a th:href="@{/students/{id}/edit(id=${student.id})}" class="btn srms-btn-outline btn-sm">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Student Info Card -->
+            <div class="col-lg-4">
+                <div class="srms-card h-100">
+                    <div class="text-center py-3">
+                        <div class="srms-avatar-large mx-auto mb-3" th:text="${#strings.substring(student.name, 0, 1)}">R</div>
+                        <h2 class="fw-bold mb-1" th:text="${student.name}">Name</h2>
+                        <p class="text-muted mb-3"><code th:text="${student.rollNumber}">23CS001</code></p>
+                        <span th:if="${student.isActive}" class="badge srms-badge-active fs-6 px-3 py-2">Active</span>
+                        <span th:unless="${student.isActive}" class="badge srms-badge-inactive fs-6 px-3 py-2">Inactive</span>
+                    </div>
+                    <hr/>
+                    <ul class="list-unstyled srms-info-list">
+                        <li><i class="bi bi-building me-2 text-primary"></i><span th:text="${student.department}">CSE</span></li>
+                        <li><i class="bi bi-layers me-2 text-primary"></i>Semester <span th:text="${student.currentSem}">3</span></li>
+                        <li th:if="${student.email}"><i class="bi bi-envelope me-2 text-primary"></i><span th:text="${student.email}">email</span></li>
+                        <li th:if="${student.phone}"><i class="bi bi-phone me-2 text-primary"></i><span th:text="${student.phone}">phone</span></li>
+                        <li th:if="${student.dateOfBirth}"><i class="bi bi-calendar me-2 text-primary"></i><span th:text="${#temporals.format(student.dateOfBirth, 'dd MMM yyyy')}">DOB</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CGPA + Result -->
+            <div class="col-lg-8">
+                <!-- CGPA Banner -->
+                <div class="srms-cgpa-banner mb-4"
+                     th:classappend="${result.cgpa >= 8.5} ? ' cgpa-green' : (${result.cgpa >= 6.5} ? ' cgpa-yellow' : ' cgpa-red')">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="cgpa-display">
+                                <span class="cgpa-label">CGPA</span>
+                                <span class="cgpa-value" th:text="${#numbers.formatDecimal(result.cgpa, 1, 2)}">0.00</span>
+                                <span class="cgpa-max">/ 10.0</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row g-3">
+                                <div class="col-sm-4 text-center">
+                                    <div class="cgpa-stat-val" th:text="${result.totalCourses}">0</div>
+                                    <div class="cgpa-stat-lbl">Courses</div>
+                                </div>
+                                <div class="col-sm-4 text-center">
+                                    <div class="cgpa-stat-val" th:text="${result.backlogs}">0</div>
+                                    <div class="cgpa-stat-lbl">Backlogs</div>
+                                </div>
+                                <div class="col-sm-4 text-center">
+                                    <div class="cgpa-stat-val" th:text="${result.semesters.size()}">0</div>
+                                    <div class="cgpa-stat-lbl">Semesters</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semester Accordion -->
+                <div th:if="${#lists.isEmpty(result.semesters)}" class="srms-card text-center py-5 text-muted">
+                    <i class="bi bi-journal-x fs-1 d-block mb-3 opacity-25"></i>
+                    <p>No grades recorded yet.</p>
+                    <a th:href="@{/enrollments/new(studentId=${student.id})}" class="btn srms-btn-primary btn-sm">Enroll in Courses</a>
+                </div>
+
+                <div class="accordion srms-accordion" id="semesterAccordion" th:unless="${#lists.isEmpty(result.semesters)}">
+                    <div class="accordion-item srms-accordion-item" th:each="sem, iterStat : ${result.semesters}">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button srms-accordion-btn"
+                                    th:classappend="${!iterStat.first} ? ' collapsed' : ''"
+                                    type="button" data-bs-toggle="collapse"
+                                    th:attr="data-bs-target='#sem' + ${sem.semester}, aria-controls='sem' + ${sem.semester}">
+                                <div class="d-flex align-items-center justify-content-between w-100 pe-3">
+                                    <span><i class="bi bi-layers me-2"></i>Semester <span th:text="${sem.semester}">1</span>
+                                        <small class="text-muted ms-2" th:text="${sem.academicYear}"></small></span>
+                                    <span class="badge"
+                                          th:classappend="${sem.gpa >= 8.5} ? ' srms-badge-cgpa-green' : (${sem.gpa >= 6.5} ? ' srms-badge-cgpa-yellow' : ' srms-badge-cgpa-red')"
+                                          th:text="'GPA: ' + ${#numbers.formatDecimal(sem.gpa, 1, 2)}">GPA</span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div th:id="'sem' + ${sem.semester}" class="accordion-collapse collapse"
+                             th:classappend="${iterStat.first} ? ' show' : ''"
+                             data-bs-parent="#semesterAccordion">
+                            <div class="accordion-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table srms-table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Code</th><th>Course</th><th>Credits</th>
+                                                <th>Marks</th><th>Grade</th><th>Grade Point</th><th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="course : ${sem.courses}">
+                                                <td><code th:text="${course.courseCode}">CS301</code></td>
+                                                <td th:text="${course.courseName}">Course Name</td>
+                                                <td th:text="${course.credits}">4</td>
+                                                <td th:text="${course.marksObtained}">91</td>
+                                                <td>
+                                                    <span class="badge srms-grade-badge"
+                                                          th:classappend="${course.grade == 'O' or course.grade == 'A+'} ? ' srms-grade-o' : (${course.grade == 'F'} ? ' srms-grade-f' : ' srms-grade-pass')"
+                                                          th:text="${course.grade}">O</span>
+                                                </td>
+                                                <td th:text="${course.gradePoint}">10.0</td>
+                                                <td>
+                                                    <span th:if="${course.isPassed}" class="badge srms-badge-active">Pass</span>
+                                                    <span th:unless="${course.isPassed}" class="badge srms-badge-inactive">Fail</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-active fw-bold">
+                                                <td colspan="2">Semester Total</td>
+                                                <td th:text="${sem.totalCredits}">16</td>
+                                                <td colspan="2"></td>
+                                                <td th:text="${#numbers.formatDecimal(sem.gpa, 1, 2)}">8.44</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="srms-footer mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-mortarboard-fill me-2 text-primary"></i>SRMS &copy; 2025</span>
+            <span class="text-muted small">Student Result Management System</span>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/srms.js}"></script>
+</body>
+</html>

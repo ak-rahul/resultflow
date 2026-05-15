@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Grade Entry | SRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/srms.css}"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg srms-navbar sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand srms-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div><span>SRMS</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav5"><i class="bi bi-list text-white fs-4"></i></button>
+        <div class="collapse navbar-collapse" id="nav5">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/}"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/students}"><i class="bi bi-people-fill me-1"></i>Students</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/courses}"><i class="bi bi-book-fill me-1"></i>Courses</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/enrollments/new}"><i class="bi bi-journal-plus me-1"></i>Enroll</a></li>
+                <li class="nav-item"><a class="nav-link srms-nav-link active" th:href="@{/grades/entry}"><i class="bi bi-pencil-square me-1"></i>Grades</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 pt-3" th:if="${successMessage != null}">
+    <div class="alert alert-success alert-dismissible fade show srms-alert-success">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<main class="srms-main">
+    <div class="container-fluid px-4">
+        <div class="srms-page-header">
+            <div>
+                <h1 class="srms-page-title"><i class="bi bi-pencil-square me-2 text-primary"></i>Grade Entry</h1>
+                <p class="srms-page-subtitle">Enter marks for enrolled courses. Grade is calculated automatically.</p>
+            </div>
+            <a th:href="@{/students}" class="btn srms-btn-outline"><i class="bi bi-arrow-left me-1"></i>Back to Students</a>
+        </div>
+
+        <!-- Step 1: Select Student -->
+        <div class="srms-card mb-4">
+            <h2 class="srms-card-title mb-3"><i class="bi bi-person me-2"></i>Select Student</h2>
+            <form method="get" th:action="@{/grades/entry}" class="d-flex gap-3 align-items-end" id="studentSelectForm">
+                <div class="flex-grow-1">
+                    <label for="studentId" class="form-label srms-label">Student</label>
+                    <select id="studentId" name="studentId" class="form-select srms-input"
+                            onchange="this.form.submit()">
+                        <option value="">-- Select a Student --</option>
+                        <option th:each="s : ${students}"
+                                th:value="${s.id}"
+                                th:text="${s.rollNumber + ' — ' + s.name}"
+                                th:selected="${selectedStudent != null and s.id == selectedStudent.id}">Student</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 2: Grade Entry Table (shown only when student is selected) -->
+        <div th:if="${selectedStudent != null}">
+            <div class="srms-card">
+                <div class="srms-card-header d-flex justify-content-between align-items-center">
+                    <h2 class="srms-card-title mb-0">
+                        <i class="bi bi-award me-2"></i>
+                        Enter Marks — <span th:text="${selectedStudent.name}">Student</span>
+                        <small class="text-muted ms-2" th:text="'(' + ${selectedStudent.rollNumber} + ')'"></small>
+                    </h2>
+                </div>
+
+                <div th:if="${#lists.isEmpty(enrollments)}" class="text-center py-5 text-muted">
+                    <i class="bi bi-check-all fs-1 d-block mb-3 opacity-25"></i>
+                    <p>All enrolled courses have grades entered, or the student has no enrollments.</p>
+                    <a th:href="@{/enrollments/new(studentId=${selectedStudent.id})}" class="btn srms-btn-primary btn-sm">
+                        Enroll in More Courses
+                    </a>
+                </div>
+
+                <form th:unless="${#lists.isEmpty(enrollments)}"
+                      th:action="@{/grades/entry}" method="post" id="gradeEntryForm">
+                    <input type="hidden" name="studentId" th:value="${selectedStudent.id}"/>
+
+                    <!-- Grade entry table with live preview -->
+                    <div class="table-responsive">
+                        <table class="table srms-table mb-0" id="gradeEntryTable">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Credits</th>
+                                    <th>Marks (0–100)</th>
+                                    <th>Predicted Grade</th>
+                                    <th>Grade Point</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="enrollment : ${enrollments}">
+                                    <td><code th:text="${enrollment.course.courseCode}">CS301</code></td>
+                                    <td th:text="${enrollment.course.courseName}">Course</td>
+                                    <td th:text="${enrollment.course.credits}">4</td>
+                                    <td>
+                                        <input type="number"
+                                               th:name="'marks_' + ${enrollment.id}"
+                                               th:id="'marks_' + ${enrollment.id}"
+                                               class="form-control srms-input srms-marks-input"
+                                               min="0" max="100" step="0.5"
+                                               placeholder="0–100" required
+                                               oninput="updateGradePreview(this)"/>
+                                        <div class="invalid-feedback">Marks must be 0–100</div>
+                                    </td>
+                                    <td>
+                                        <span th:id="'grade_' + ${enrollment.id}"
+                                              class="badge srms-grade-badge fs-6 px-3 py-2">—</span>
+                                    </td>
+                                    <td>
+                                        <span th:id="'gp_' + ${enrollment.id}" class="fw-bold">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-3 p-3 border-top">
+                        <button type="submit" class="btn srms-btn-primary" id="submitGradesBtn">
+                            <i class="bi bi-check-circle-fill me-2"></i>Save All Grades
+                        </button>
+                        <a th:href="@{/students/{id}(id=${selectedStudent.id})}" class="btn srms-btn-outline">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Grade mapping reference card -->
+            <div class="srms-card mt-4">
+                <h3 class="srms-card-title mb-3"><i class="bi bi-table me-2"></i>Grade Reference Table</h3>
+                <div class="table-responsive">
+                    <table class="table table-sm srms-table mb-0" id="gradeReferenceTable">
+                        <thead><tr><th>Marks Range</th><th>Grade</th><th>Grade Point</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>90 – 100</td><td><span class="badge srms-grade-badge srms-grade-o">O</span></td><td>10.0</td><td>Outstanding</td></tr>
+                            <tr><td>80 – 89</td><td><span class="badge srms-grade-badge srms-grade-o">A+</span></td><td>9.0</td><td>Excellent</td></tr>
+                            <tr><td>70 – 79</td><td><span class="badge srms-grade-badge srms-grade-pass">A</span></td><td>8.0</td><td>Very Good</td></tr>
+                            <tr><td>60 – 69</td><td><span class="badge srms-grade-badge srms-grade-pass">B+</span></td><td>7.0</td><td>Good</td></tr>
+                            <tr><td>50 – 59</td><td><span class="badge srms-grade-badge srms-grade-pass">B</span></td><td>6.0</td><td>Above Average</td></tr>
+                            <tr><td>45 – 49</td><td><span class="badge srms-grade-badge srms-grade-pass">C</span></td><td>5.0</td><td>Average</td></tr>
+                            <tr><td>40 – 44</td><td><span class="badge srms-grade-badge srms-grade-pass">P</span></td><td>4.0</td><td>Pass</td></tr>
+                            <tr><td>0 – 39</td><td><span class="badge srms-grade-badge srms-grade-f">F</span></td><td>0.0</td><td>Fail</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer class="srms-footer mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-mortarboard-fill me-2 text-primary"></i>SRMS &copy; 2025</span>
+            <span class="text-muted small">Student Result Management System</span>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/srms.js}"></script>
+</body>
+</html>

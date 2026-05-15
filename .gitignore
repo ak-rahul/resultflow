@@ -1,0 +1,48 @@
+# ── Compiled output ───────────────────────────────────────────────────────────
+target/
+
+# ── Maven wrapper cache (downloaded on first run, don't commit) ───────────────
+.mvn/wrapper/maven-wrapper.jar
+
+# ── IDE — IntelliJ IDEA ───────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ── IDE — Eclipse ─────────────────────────────────────────────────────────────
+.project
+.classpath
+.settings/
+bin/
+
+# ── IDE — VS Code ─────────────────────────────────────────────────────────────
+.vscode/
+
+# ── Application logs ──────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── OS generated files ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Environment / secrets — NEVER commit credentials ─────────────────────────
+# Rename application.properties to application.properties.example for GitHub
+# and add your real credentials locally.
+# If you use a separate profile file, ignore it here:
+application-local.properties
+application-secret.properties
+
+# ── Spring Boot packed JAR ────────────────────────────────────────────────────
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ── JaCoCo coverage reports ───────────────────────────────────────────────────
+target/site/
+
+# ── Checkstyle / PMD reports ──────────────────────────────────────────────────
+target/checkstyle-result.xml
+target/pmd.xml
