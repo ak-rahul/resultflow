@@ -1,4 +1,4 @@
-# Student Result Management System (SRMS)
+# ResultFlow
 
 > **Built for:** Cognizant DN 5.0 — Programmer Analyst / Programmer Analyst Trainee (Java FSE)
 > **JD Coverage:** Java · Spring MVC · Spring Boot · Spring REST · MySQL · JDBC · HTML5 · CSS3 · Bootstrap · JUnit · Mockito · Logging
@@ -15,7 +15,6 @@
 6. [REST API Reference](#rest-api-reference)
 7. [Running Tests](#running-tests)
 8. [Grade Mapping](#grade-mapping)
-9. [Interview Talking Points](#interview-talking-points)
 
 ---
 
@@ -79,7 +78,7 @@
 ## Project Structure
 
 ```
-srms/
+resultflow/
 ├── src/main/java/com/rahulak/srms/
 │   ├── SrmsApplication.java
 │   ├── model/          Student, Course, Enrollment, Grade, CourseType
