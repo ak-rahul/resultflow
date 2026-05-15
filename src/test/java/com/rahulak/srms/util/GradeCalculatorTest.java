@@ -1,6 +1,4 @@
 package com.rahulak.srms.util;
-
-import com.rahulak.srms.util.GradeCalculator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

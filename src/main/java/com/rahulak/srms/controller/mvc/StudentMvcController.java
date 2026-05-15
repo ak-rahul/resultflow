@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -85,6 +86,7 @@ public class StudentMvcController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public String viewStudent(@PathVariable Long id, Model model) {
         log.debug("GET /students/{}", id);
         Student student = studentService.findById(id);

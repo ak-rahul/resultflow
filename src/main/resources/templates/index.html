@@ -13,27 +13,7 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg srms-navbar sticky-top" id="mainNavbar">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand srms-brand d-flex align-items-center gap-2" th:href="@{/}">
-            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
-            <span>SRMS</span>
-        </a>
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
-            <i class="bi bi-list text-white fs-4"></i>
-        </button>
-        <div class="collapse navbar-collapse" id="navContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
-                <li class="nav-item"><a class="nav-link srms-nav-link active" th:href="@{/}"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/students}"><i class="bi bi-people-fill me-1"></i>Students</a></li>
-                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/courses}"><i class="bi bi-book-fill me-1"></i>Courses</a></li>
-                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/enrollments/new}"><i class="bi bi-journal-plus me-1"></i>Enroll</a></li>
-                <li class="nav-item"><a class="nav-link srms-nav-link" th:href="@{/grades/entry}"><i class="bi bi-pencil-square me-1"></i>Grades</a></li>
-            </ul>
-            <a class="btn btn-outline-light btn-sm" th:href="@{/students/new}"><i class="bi bi-person-plus-fill me-1"></i>Add Student</a>
-        </div>
-    </div>
-</nav>
+<div th:replace="~{layout/fragments :: navbar}" th:with="activePage='dashboard'"></div>
 
 <!-- Flash Messages -->
 <div class="container-fluid px-4 pt-3" th:if="${successMessage != null}">
@@ -157,14 +137,7 @@
     </div>
 </main>
 
-<footer class="srms-footer mt-auto">
-    <div class="container-fluid px-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-mortarboard-fill me-2 text-primary"></i>SRMS &copy; 2025</span>
-            <span class="text-muted small">Student Result Management System &mdash; Spring Boot 3.2</span>
-        </div>
-    </div>
-</footer>
+<div th:replace="~{layout/fragments :: footer}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/srms.js}"></script>
